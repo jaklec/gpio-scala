@@ -40,45 +40,64 @@ class GpioSpec extends WordSpecLike with ShouldMatchers with BeforeAndAfterEach 
     val gpio = new Gpio with MockGpioBase
 
     "create file access to a port" in {
-      gpio export(Gpid10, In)
+      gpio open(Pid10, In)
       val actual = readAllLines(exportPath, StandardCharsets UTF_8).asScala.mkString
 
       actual should equal("10")
     }
 
     "remove file access to a port if it exists" in {
-      gpio unexport Gpid10
+      gpio close Pid10
       val actual = readAllLines(unexportPath, StandardCharsets.UTF_8).asScala.mkString
 
       actual should equal("10")
     }
 
     "not remove file access to a port if it doesn't exist" in {
-      gpio unexport Gpid17
+      gpio close Pid17
       val actual = readAllLines(unexportPath, StandardCharsets.UTF_8).asScala
 
       actual.isEmpty should be(true)
     }
 
     "set port direction to IN" in {
-      gpio export(Gpid10, In)
+      gpio open(Pid10, In)
       val direction = readAllLines(gpio10DirectionPath, StandardCharsets.UTF_8).asScala.mkString
 
       direction should equal("in")
     }
 
     "set port direction to OUT" in {
-      gpio export(Gpid10, Out)
+      gpio open(Pid10, Out)
       val direction = readAllLines(gpio10DirectionPath, StandardCharsets.UTF_8).asScala.mkString
 
       direction should equal("out")
     }
 
     "write value to pin" in {
-      gpio write(Gpid10, "foo")
+      gpio write(Pid10, Analog("foo"))
       val value = readAllLines(gpio10ValuePath, StandardCharsets.UTF_8).asScala.mkString
 
       value should equal("foo")
+    }
+
+    "read analog value from pin" in {
+      gpio write(Pid10, Analog("foo"))
+      val value = gpio read Pid10
+
+      value should equal("foo")
+    }
+
+    "write digital value to pin" in {
+      gpio write(Pid10, On)
+      val on = gpio read Pid10
+
+      on should equal("1")
+
+      gpio write(Pid10, Off)
+      val off = gpio read Pid10
+
+      off should equal("0")
     }
   }
 
