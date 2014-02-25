@@ -41,6 +41,10 @@ class Gpio { this: GpioBase =>
       write(port.number, Paths get s"$basePath/unexport")
   }
 
+  def write(port: Gpid, value: String): Unit = {
+    write(value, Paths get s"$basePath/gpio${port.number}/value")
+  }
+
   private def write(value: String, path: Path): Unit = {
     Files write(path, value.getBytes(StandardCharsets.UTF_8), StandardOpenOption CREATE)
   }

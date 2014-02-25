@@ -22,6 +22,7 @@ class GpioSpec extends WordSpecLike with ShouldMatchers with BeforeAndAfterEach 
   val unexportPath = Paths get s"$path/unexport"
   val gpio10Path = Paths get s"$path/gpio10"
   val gpio10DirectionPath: Path = Paths get s"$gpio10Path/direction"
+  val gpio10ValuePath: Path = Paths get s"$gpio10Path/value"
 
   override def beforeEach() {
     createDirectories(path)
@@ -71,6 +72,13 @@ class GpioSpec extends WordSpecLike with ShouldMatchers with BeforeAndAfterEach 
       val direction = readAllLines(gpio10DirectionPath, StandardCharsets.UTF_8).asScala.mkString
 
       direction should equal("out")
+    }
+
+    "write value to pin" in {
+      gpio write(Gpid10, "foo")
+      val value = readAllLines(gpio10ValuePath, StandardCharsets.UTF_8).asScala.mkString
+
+      value should equal("foo")
     }
   }
 
