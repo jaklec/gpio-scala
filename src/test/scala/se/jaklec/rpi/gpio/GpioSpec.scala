@@ -7,15 +7,20 @@ import java.nio.file.attribute.BasicFileAttributes
 import java.nio.charset.StandardCharsets
 import scala.collection.JavaConverters._
 
-trait MockGpioBase extends GpioBase {
-
-  val basePath = "src/test/resources/test"
-}
 
 class GpioSpec extends WordSpecLike with ShouldMatchers with BeforeAndAfterEach {
 
   import java.nio.file.Files._
 
+  trait MockGpioBase extends GpioBase {
+  
+    val basePath = "src/test/resources/test"
+  }
+
+  object TestPin10 extends Gpio with MockGpioBase {
+    override val pin: String = 10.toString
+  }
+  
   val dir = new MockGpioBase {} basePath
   val path = Paths get dir
   val exportPath = Paths get s"$path/export"
@@ -37,65 +42,68 @@ class GpioSpec extends WordSpecLike with ShouldMatchers with BeforeAndAfterEach 
   }
 
   "A Gpio" should {
-    val gpio = new Gpio with MockGpioBase
 
     "create file access to a port" in {
-      gpio open(Pid10, In)
+      TestPin10 open In
       val actual = readAllLines(exportPath, StandardCharsets UTF_8).asScala.mkString
 
       actual should equal("10")
     }
 
     "remove file access to a port if it exists" in {
-      gpio close Pid10
+      TestPin10 close
       val actual = readAllLines(unexportPath, StandardCharsets.UTF_8).asScala.mkString
 
       actual should equal("10")
     }
 
     "not remove file access to a port if it doesn't exist" in {
-      gpio close Pid17
+      object TestPin17 extends Gpio with MockGpioBase {
+        override val pin: String = 17.toString
+      }
+
+      TestPin17 close
       val actual = readAllLines(unexportPath, StandardCharsets.UTF_8).asScala
 
       actual.isEmpty should be(true)
     }
 
     "set port direction to IN" in {
-      gpio open(Pid10, In)
+      TestPin10 open In
       val direction = readAllLines(gpio10DirectionPath, StandardCharsets.UTF_8).asScala.mkString
 
       direction should equal("in")
     }
 
     "set port direction to OUT" in {
-      gpio open(Pid10, Out)
+      TestPin10 open Out
       val direction = readAllLines(gpio10DirectionPath, StandardCharsets.UTF_8).asScala.mkString
 
       direction should equal("out")
     }
 
     "write value to pin" in {
-      gpio write(Pid10, Analog("foo"))
+      TestPin10 write Analog("foo")
       val value = readAllLines(gpio10ValuePath, StandardCharsets.UTF_8).asScala.mkString
 
       value should equal("foo")
     }
 
     "read analog value from pin" in {
-      gpio write(Pid10, Analog("foo"))
-      val value = gpio read Pid10
+      TestPin10 write Analog("foo")
+      val value = TestPin10 read
 
       value should equal("foo")
     }
 
     "write digital value to pin" in {
-      gpio write(Pid10, On)
-      val on = gpio read Pid10
+      TestPin10 write On
+      val on = TestPin10 read
 
       on should equal("1")
 
-      gpio write(Pid10, Off)
-      val off = gpio read Pid10
+      TestPin10 write Off
+      val off = TestPin10 read
 
       off should equal("0")
     }
