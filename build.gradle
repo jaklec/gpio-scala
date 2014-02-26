@@ -1,6 +1,8 @@
 apply plugin: 'scala'
 apply plugin: 'idea'
+apply plugin: 'maven'
 
+group = "se.jaklec"
 version = "$version"
 
 sourceCompatibility = JavaVersion.VERSION_1_7
