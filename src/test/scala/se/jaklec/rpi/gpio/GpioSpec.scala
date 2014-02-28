@@ -82,7 +82,7 @@ class GpioSpec extends WordSpecLike with ShouldMatchers with BeforeAndAfterEach 
       direction should equal("out")
     }
 
-    "write value to pin" in {
+    "write analog value to pin" in {
       TestPin10 write Analog("foo")
       val value = readAllLines(gpio10ValuePath, StandardCharsets.UTF_8).asScala.mkString
 
@@ -91,21 +91,33 @@ class GpioSpec extends WordSpecLike with ShouldMatchers with BeforeAndAfterEach 
 
     "read analog value from pin" in {
       TestPin10 write Analog("foo")
-      val value = TestPin10 read
+      val result = TestPin10 read
 
-      value should equal("foo")
+      result.value should equal("foo")
     }
 
     "write digital value to pin" in {
       TestPin10 write On
-      val on = TestPin10 read
+      val on = readAllLines(gpio10ValuePath, StandardCharsets.UTF_8).asScala.mkString
 
       on should equal("1")
 
       TestPin10 write Off
-      val off = TestPin10 read
+      val off = readAllLines(gpio10ValuePath, StandardCharsets.UTF_8).asScala.mkString
 
       off should equal("0")
+    }
+
+    "read digital value from pin" in {
+      TestPin10 write On
+      val r1 = TestPin10 read
+
+      r1 should equal(On)
+
+      TestPin10 write Off
+      val r2 = TestPin10 read
+
+      r2 should equal(Off)
     }
   }
 

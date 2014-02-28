@@ -21,10 +21,11 @@ sealed abstract class Io(val direction: String)
 case object In extends Io("in")
 case object Out extends Io("out")
 
-sealed abstract class Value(val v: String)
-case class Analog(override val v: String) extends Value(v)
-case object On extends Value("1")
-case object Off extends Value("0")
+sealed abstract class Value(val value: String)
+case class Analog(override val value: String) extends Value(value)
+abstract class Digital(val digit: Int) extends Value(digit.toString)
+case object On extends Digital(1)
+case object Off extends Digital(0)
 
 trait GpioBase {
 
@@ -55,11 +56,16 @@ trait Gpio { this: GpioBase =>
     write(value, Paths get s"$basePath/gpio$pin/value")
   }
 
-  def read: String = {
-    Files.readAllLines(Paths get s"$basePath/gpio$pin/value", StandardCharsets.UTF_8).asScala.mkString
+  def read: Value = {
+    val v = Files.readAllLines(Paths get s"$basePath/gpio$pin/value", StandardCharsets.UTF_8).asScala.mkString
+    v match {
+      case "0" => Off
+      case "1" => On
+      case _ => Analog(v)
+    }
   }
 
   private def write(value: Value, path: Path): Unit = {
-    Files write(path, value.v.getBytes(StandardCharsets.UTF_8), StandardOpenOption CREATE)
+    Files write(path, value.value.getBytes(StandardCharsets.UTF_8), StandardOpenOption CREATE)
   }
 }
