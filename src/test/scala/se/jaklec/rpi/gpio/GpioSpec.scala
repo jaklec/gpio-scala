@@ -6,7 +6,7 @@ import java.nio.file._
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.charset.StandardCharsets
 import scala.collection.JavaConverters._
-
+import scala.language.postfixOps
 
 class GpioSpec extends WordSpecLike with ShouldMatchers with BeforeAndAfterEach {
 

@@ -4,6 +4,7 @@ import java.nio.file.{StandardOpenOption, Files, Path, Paths}
 import java.nio.charset.StandardCharsets
 import java.io.File
 import scala.collection.JavaConverters._
+import scala.language.postfixOps
 
 sealed abstract class Pin(val p: Int) extends Gpio with DefaultGpio {
   override val pin: String = p.toString
@@ -66,6 +67,6 @@ trait Gpio { this: GpioBase =>
   }
 
   private def write(value: Value, path: Path): Unit = {
-    Files write(path, value.value.getBytes(StandardCharsets.UTF_8), StandardOpenOption CREATE)
+    Files write(path, value.value.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE)
   }
 }
