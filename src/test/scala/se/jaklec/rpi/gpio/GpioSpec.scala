@@ -1,6 +1,6 @@
 package se.jaklec.rpi.gpio
 
-import org.scalatest.{BeforeAndAfterEach, BeforeAndAfterAll, ShouldMatchers, WordSpecLike}
+import org.scalatest._
 import java.io.IOException
 import java.nio.file._
 import java.nio.file.attribute.BasicFileAttributes
@@ -8,7 +8,7 @@ import java.nio.charset.StandardCharsets
 import scala.collection.JavaConverters._
 import scala.language.postfixOps
 
-class GpioSpec extends WordSpecLike with ShouldMatchers with BeforeAndAfterEach {
+class GpioSpec extends WordSpecLike with MustMatchers with BeforeAndAfterEach {
 
   import java.nio.file.Files._
 
@@ -47,14 +47,14 @@ class GpioSpec extends WordSpecLike with ShouldMatchers with BeforeAndAfterEach 
       TestPin10 open In
       val actual = readAllLines(exportPath, StandardCharsets UTF_8).asScala.mkString
 
-      actual should equal("10")
+      actual must equal("10")
     }
 
     "remove file access to a port if it exists" in {
       TestPin10 close
       val actual = readAllLines(unexportPath, StandardCharsets.UTF_8).asScala.mkString
 
-      actual should equal("10")
+      actual must equal("10")
     }
 
     "not remove file access to a port if it doesn't exist" in {
@@ -65,59 +65,59 @@ class GpioSpec extends WordSpecLike with ShouldMatchers with BeforeAndAfterEach 
       TestPin17 close
       val actual = readAllLines(unexportPath, StandardCharsets.UTF_8).asScala
 
-      actual.isEmpty should be(true)
+      actual.isEmpty must be(true)
     }
 
     "set port direction to IN" in {
       TestPin10 open In
       val direction = readAllLines(gpio10DirectionPath, StandardCharsets.UTF_8).asScala.mkString
 
-      direction should equal("in")
+      direction must equal("in")
     }
 
     "set port direction to OUT" in {
       TestPin10 open Out
       val direction = readAllLines(gpio10DirectionPath, StandardCharsets.UTF_8).asScala.mkString
 
-      direction should equal("out")
+      direction must equal("out")
     }
 
     "write analog value to pin" in {
       TestPin10 write Analog("foo")
       val value = readAllLines(gpio10ValuePath, StandardCharsets.UTF_8).asScala.mkString
 
-      value should equal("foo")
+      value must equal("foo")
     }
 
     "read analog value from pin" in {
       TestPin10 write Analog("foo")
       val result = TestPin10 read
 
-      result.value should equal("foo")
+      result.value must equal("foo")
     }
 
     "write digital value to pin" in {
       TestPin10 write On
       val on = readAllLines(gpio10ValuePath, StandardCharsets.UTF_8).asScala.mkString
 
-      on should equal("1")
+      on must equal("1")
 
       TestPin10 write Off
       val off = readAllLines(gpio10ValuePath, StandardCharsets.UTF_8).asScala.mkString
 
-      off should equal("0")
+      off must equal("0")
     }
 
     "read digital value from pin" in {
       TestPin10 write On
       val r1 = TestPin10 read
 
-      r1 should equal(On)
+      r1 must equal(On)
 
       TestPin10 write Off
       val r2 = TestPin10 read
 
-      r2 should equal(Off)
+      r2 must equal(Off)
     }
   }
 
