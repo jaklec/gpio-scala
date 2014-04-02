@@ -58,13 +58,16 @@ trait Gpio { this: GpioBase =>
   }
 
   def read: Value = {
-    val v = Files.readAllLines(Paths get s"$basePath/gpio$pin/value", StandardCharsets.UTF_8).asScala.mkString
-    v match {
+    readFile match {
       case "0" => Off
       case "1" => On
-      case _ => Analog(v)
+      case v @ _ => Analog(v)
     }
   }
+
+  def readAnalog: Analog = Analog(readFile)
+
+  private def readFile: String = Files.readAllLines(Paths get s"$basePath/gpio$pin/value", StandardCharsets.UTF_8).asScala.mkString
 
   private def write(value: Value, path: Path): Unit = {
     Files write(path, value.value.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE)

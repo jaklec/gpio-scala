@@ -119,6 +119,16 @@ class GpioSpec extends WordSpecLike with MustMatchers with BeforeAndAfterEach {
 
       r2 must equal(Off)
     }
+
+    "explicitly read analog value from pin" in {
+      TestPin10 write Analog("1")
+      val result = TestPin10 readAnalog
+
+      result match {
+        case Analog(_) => result.value must equal("1")
+        case _ => fail("Not parsed as an analog value")
+      }
+    }
   }
 
   def deleteAllTestResources {
