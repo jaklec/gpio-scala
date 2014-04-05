@@ -5,7 +5,7 @@ import java.nio.charset.StandardCharsets
 import java.io.File
 import scala.collection.JavaConverters._
 import scala.language.postfixOps
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 sealed abstract class Pin(val p: Int) extends Gpio with DefaultGpio {
   override val pin: String = p.toString
