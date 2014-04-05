@@ -7,6 +7,8 @@ import java.nio.file.attribute.BasicFileAttributes
 import java.nio.charset.StandardCharsets
 import scala.collection.JavaConverters._
 import scala.language.postfixOps
+import java.security.DigestInputStream
+import scala.util.{Success, Failure}
 
 class GpioSpec extends WordSpecLike with MustMatchers with BeforeAndAfterEach {
 
@@ -127,6 +129,30 @@ class GpioSpec extends WordSpecLike with MustMatchers with BeforeAndAfterEach {
       result match {
         case Analog(_) => result.value must equal("1")
         case _ => fail("Not parsed as an analog value")
+      }
+    }
+
+    "explicitly read digital value from pin" in {
+      TestPin10 write Off
+      val result = TestPin10 readDigital
+
+      result match {
+        case d: Success[Digital] => result.get must equal(Off)
+        case _ => fail("Not parsed as a digital value")
+      }
+    }
+
+    "fail if trying to read analog value as digital" in {
+      TestPin10 write Analog("1.23")
+      TestPin10 readDigital match {
+        case Success(d) => fail("Not returning a failure")
+        case Failure(e) => assertException(e)
+      }
+
+      def assertException(e: Throwable): Unit = e match {
+        case e: ReadException =>
+          e.getMessage must equal("Not a digital value")
+        case _ => fail("Unexpected exception")
       }
     }
   }

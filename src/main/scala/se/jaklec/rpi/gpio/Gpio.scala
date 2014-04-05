@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets
 import java.io.File
 import scala.collection.JavaConverters._
 import scala.language.postfixOps
+import scala.util.{Failure, Success, Try}
 
 sealed abstract class Pin(val p: Int) extends Gpio with DefaultGpio {
   override val pin: String = p.toString
@@ -58,14 +59,23 @@ trait Gpio { this: GpioBase =>
   }
 
   def read: Value = {
-    readFile match {
-      case "0" => Off
-      case "1" => On
-      case v @ _ => Analog(v)
-    }
+    val isAnalog: PartialFunction[String, Analog] = { case v @ _ => Analog(v) }
+    val readValue = isDigital orElse isAnalog
+    readValue(readFile)
   }
 
   def readAnalog: Analog = Analog(readFile)
+
+  def readDigital: Try[Digital] = Try {
+    val throwReadException: PartialFunction[String, Digital] = { case _ => throw new ReadException("Not a digital value") }
+    val readOrElseThrow = isDigital orElse throwReadException
+    readOrElseThrow(readFile)
+  }
+
+  private val isDigital: PartialFunction[String, Digital] = {
+    case "0" => Off
+    case "1" => On
+  }
 
   private def readFile: String = Files.readAllLines(Paths get s"$basePath/gpio$pin/value", StandardCharsets.UTF_8).asScala.mkString
 
@@ -73,3 +83,5 @@ trait Gpio { this: GpioBase =>
     Files write(path, value.value.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE)
   }
 }
+
+class ReadException(msg: String) extends RuntimeException(msg)
