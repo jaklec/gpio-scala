@@ -37,20 +37,20 @@ trait Gpio { this: GpioBase =>
   }
 
   def read: Value = {
-    val isAnalog: PartialFunction[String, Analog] = { case v @ _ => Analog(v) }
-    val readValue = isDigital orElse isAnalog
+    val asAnalog: PartialFunction[String, Analog] = { case v @ _ => Analog(v) }
+    val readValue = asDigital orElse asAnalog
     readValue(readFile)
   }
 
   def readAnalog: Analog = Analog(readFile)
 
   def readDigital: Try[Digital] = Try {
-    val throwReadException: PartialFunction[String, Digital] = { case _ => throw new ReadException("Not a digital value") }
-    val readOrElseThrow = isDigital orElse throwReadException
-    readOrElseThrow(readFile)
+    val failWithReadException: PartialFunction[String, Digital] = { case _ => throw new ReadException("Not a digital value") }
+    val readAsDigitalOrFail = asDigital orElse failWithReadException
+    readAsDigitalOrFail(readFile)
   }
 
-  private val isDigital: PartialFunction[String, Digital] = {
+  private val asDigital: PartialFunction[String, Digital] = {
     case "0" => Off
     case "1" => On
   }
