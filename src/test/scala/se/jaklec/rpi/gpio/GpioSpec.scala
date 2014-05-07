@@ -10,7 +10,7 @@ import scala.language.postfixOps
 import scala.util.{Success, Failure}
 
 class GpioSpec extends WordSpecLike with MustMatchers with BeforeAndAfterEach {
-
+  import se.jaklec.rpi.gpio.Gpio._
   import java.nio.file.Files._
 
   trait MockGpioBase extends GpioBase {
