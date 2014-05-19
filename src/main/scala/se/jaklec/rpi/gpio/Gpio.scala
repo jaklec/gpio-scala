@@ -5,7 +5,8 @@ import java.nio.charset.StandardCharsets
 import java.io.File
 import scala.collection.JavaConverters._
 import scala.language.postfixOps
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
+import scala.concurrent.{Future, future}
 
 trait GpioBase {
 
@@ -44,6 +45,7 @@ object Gpio {
 trait Gpio {
   this: GpioBase =>
   import se.jaklec.rpi.gpio.Gpio._
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   val pin: String
 
@@ -70,10 +72,19 @@ trait Gpio {
 
   def readAnalog: Analog = Analog(readFile)
 
+  def asyncReadAnalog: Future[Analog] = future { readAnalog }
+
   def readDigital: Try[Digital] = Try {
     val failWithReadException: PartialFunction[String, Digital] = { case _ => throw new ReadException("Not a digital value") }
     val readAsDigitalOrFail = asDigital orElse failWithReadException
     readAsDigitalOrFail(readFile)
+  }
+
+  def asyncReadDigital: Future[Digital] = future {
+    readDigital match {
+      case Success(d) => d
+      case Failure(e) => throw e
+    }
   }
 
   private val asDigital: PartialFunction[String, Digital] = {

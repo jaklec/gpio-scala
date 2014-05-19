@@ -8,8 +8,12 @@ import java.nio.charset.StandardCharsets
 import scala.collection.JavaConverters._
 import scala.language.postfixOps
 import scala.util.{Success, Failure}
+import org.scalatest.concurrent.ScalaFutures
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration._
+import org.scalatest.concurrent.PatienceConfiguration.Timeout
 
-class GpioSpec extends WordSpecLike with MustMatchers with BeforeAndAfterEach {
+class GpioSpec extends WordSpecLike with MustMatchers with BeforeAndAfterEach with ScalaFutures {
   import se.jaklec.rpi.gpio.Gpio._
   import java.nio.file.Files._
 
@@ -138,6 +142,32 @@ class GpioSpec extends WordSpecLike with MustMatchers with BeforeAndAfterEach {
       result match {
         case d: Success[Digital] => result.get must equal(Off)
         case _ => fail("Not parsed as a digital value")
+      }
+    }
+
+    "read analog value asynchronously" in {
+      TestPin10 write Analog("1")
+      val result: Future[Analog] = TestPin10 asyncReadAnalog
+
+      whenReady(result) { analog =>
+        analog.value must be("1")
+      }
+    }
+
+    "read digital value asynchronously" in {
+      TestPin10 write Off
+      val result: Future[Digital] = TestPin10 asyncReadDigital
+
+      whenReady(result) { digital =>
+        digital must be(Off)
+      }
+    }
+
+    "propagate failure when reading async digitals" in {
+      val result: Future[Digital] = TestPin10 asyncReadDigital
+
+      intercept[NoSuchFileException] {
+        val v = Await.result(result, 200 millis).value
       }
     }
 
