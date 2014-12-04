@@ -11,10 +11,8 @@ import scala.util.{Success, Failure}
 import org.scalatest.concurrent.ScalaFutures
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
-import org.scalatest.concurrent.PatienceConfiguration.Timeout
 
 class GpioSpec extends WordSpecLike with MustMatchers with BeforeAndAfterEach with ScalaFutures {
-  import se.jaklec.rpi.gpio.Gpio._
   import java.nio.file.Files._
 
   trait MockGpioBase extends GpioBase {
@@ -22,10 +20,6 @@ class GpioSpec extends WordSpecLike with MustMatchers with BeforeAndAfterEach wi
     val basePath = "src/test/resources/test"
   }
 
-  object TestPin10 extends Gpio with MockGpioBase {
-    override val pin: String = 10.toString
-  }
-  
   val dir = new MockGpioBase {} basePath
   val path = Paths get dir
   val exportPath = Paths get s"$path/export"
@@ -48,6 +42,8 @@ class GpioSpec extends WordSpecLike with MustMatchers with BeforeAndAfterEach wi
 
   "A Gpio" should {
 
+    val TestPin10 = new Gpio(10.toString) with MockGpioBase
+
     "create file access to a port" in {
       TestPin10 open In
       val actual = readAllLines(exportPath, StandardCharsets UTF_8).asScala.mkString
@@ -63,9 +59,7 @@ class GpioSpec extends WordSpecLike with MustMatchers with BeforeAndAfterEach wi
     }
 
     "not remove file access to a port if it doesn't exist" in {
-      object TestPin17 extends Gpio with MockGpioBase {
-        override val pin: String = 17.toString
-      }
+      val TestPin17 = new Gpio(17.toString) with MockGpioBase
 
       TestPin17 close
       val actual = readAllLines(unexportPath, StandardCharsets.UTF_8).asScala
