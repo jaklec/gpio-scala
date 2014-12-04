@@ -42,7 +42,7 @@ class GpioSpec extends WordSpecLike with MustMatchers with BeforeAndAfterEach wi
 
   "A Gpio" should {
 
-    val TestPin10 = new Gpio(10.toString) with MockGpioBase
+    val TestPin10 = new Gpio(10) with MockGpioBase
 
     "create file access to a port" in {
       TestPin10 open In
@@ -59,7 +59,7 @@ class GpioSpec extends WordSpecLike with MustMatchers with BeforeAndAfterEach wi
     }
 
     "not remove file access to a port if it doesn't exist" in {
-      val TestPin17 = new Gpio(17.toString) with MockGpioBase
+      val TestPin17 = new Gpio(17) with MockGpioBase
 
       TestPin17 close
       val actual = readAllLines(unexportPath, StandardCharsets.UTF_8).asScala

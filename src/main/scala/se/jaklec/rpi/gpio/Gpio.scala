@@ -20,22 +20,22 @@ trait DefaultConfig extends GpioBase {
 }
 
 object Gpio {
-  def apply(pin: Int) = new Gpio(pin.toString) with DefaultConfig
+  def apply(pin: Int) = new Gpio(pin) with DefaultConfig
 }
 
-class Gpio(pin: String) {
+class Gpio(pin: Int) {
   this: GpioBase =>
   import scala.concurrent.ExecutionContext.Implicits.global
 
   def open(io: Io): Unit = {
-    write(Analog(pin), Paths get s"$basePath/export")
+    write(Analog(pin.toString), Paths get s"$basePath/export")
     write(Analog(io.direction), Paths get s"$basePath/gpio$pin/direction")
   }
 
   def close: Unit = {
     val portAccessFile = new File(s"$basePath/gpio$pin")
     if (portAccessFile.exists())
-      write(Analog(pin), Paths get s"$basePath/unexport")
+      write(Analog(pin.toString), Paths get s"$basePath/unexport")
   }
 
   def write(value: Value): Unit = {

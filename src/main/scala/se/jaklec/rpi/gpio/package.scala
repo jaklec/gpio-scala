@@ -2,7 +2,7 @@ package se.jaklec.rpi
 
 package object gpio {
 
-  abstract class Pin(val p: Int) extends Gpio(p.toString) with DefaultConfig
+  abstract class Pin(val p: Int) extends Gpio(p) with DefaultConfig
   case object Pin0 extends Pin(0)
   case object Pin1 extends Pin(1)
   case object Pin4 extends Pin(4)
